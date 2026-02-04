@@ -73,6 +73,8 @@ export default function GymWebsite() {
       console.error(error);
       alert("Something went wrong. Please try again.");
     }
+
+
 };
 
 const handleBookClass = (e) => {
