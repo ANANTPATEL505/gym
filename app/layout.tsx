@@ -1,18 +1,30 @@
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Bebas_Neue, Inter } from 'next/font/google'
+import './globals.css'
 
-import { ReactNode } from "react";
+const bebas = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bebas',
+})
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
 
+export const metadata: Metadata = {
+  title: 'IronPeak Gym — Transform Your Body & Mind',
+  description: 'Premium fitness center with elite equipment, expert trainers, and results-driven programs.',
+  keywords: 'gym, fitness, personal training, classes, membership',
+}
 
-export const metadata = {
-  title: "IronPeak Gym",
-  description: "Transform your body & mind",
-};
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-black text-white">{children}</body>
+    <html lang="en" className={`${bebas.variable} ${inter.variable}`}>
+      <body className="bg-[#080808] text-white font-inter antialiased">
+        {children}
+      </body>
     </html>
-  );
+  )
 }

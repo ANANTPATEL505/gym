@@ -6,27 +6,162 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url= env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
-model Contact {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  message   String
-  createdAt DateTime @default(now())
+model Member {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  phone       String?
+  plan        Plan      @default(STARTER)
+  status      Status    @default(ACTIVE)
+  joinedAt    DateTime  @default(now())
+  expiresAt   DateTime?
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("members")
+}
+
+model GymClass {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  trainer     Trainer   @relation(fields: [trainerId], references: [id])
+  trainerId   String
+  maxSpots    Int       @default(20)
+  duration    Int       @default(60) // minutes
+  category    Category  @default(STRENGTH)
+  image       String?
+  bookings    Booking[]
+  schedules   Schedule[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("gym_classes")
+}
+
+model Trainer {
+  id          String     @id @default(cuid())
+  name        String
+  email       String     @unique
+  phone       String?
+  specialty   String[]
+  bio         String?
+  image       String?
+  experience  Int        @default(1) // years
+  rating      Float      @default(5.0)
+  classes     GymClass[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("trainers")
+}
+
+model Schedule {
+  id          String    @id @default(cuid())
+  gymClass    GymClass  @relation(fields: [classId], references: [id])
+  classId     String
+  dayOfWeek   Int       // 0=Sun, 1=Mon ... 6=Sat
+  startTime   String    // "06:00"
+  endTime     String    // "07:00"
+  isActive    Boolean   @default(true)
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+
+  @@map("schedules")
 }
 
 model Booking {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  phone     String
-  className String
-  createdAt DateTime @default(now())
+  id          String    @id @default(cuid())
+  member      Member?   @relation(fields: [memberId], references: [id])
+  memberId    String?
+  guestName   String?
+  guestEmail  String?
+  guestPhone  String?
+  gymClass    GymClass  @relation(fields: [classId], references: [id])
+  classId     String
+  schedule    Schedule? @relation(fields: [scheduleId], references: [id])
+  scheduleId  String?
+  date        DateTime
+  status      BookingStatus @default(CONFIRMED)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("bookings")
+}
+
+model Contact {
+  id          String    @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  message     String
+  status      ContactStatus @default(UNREAD)
+  createdAt   DateTime  @default(now())
+
+  @@map("contacts")
+}
+
+model Subscription {
+  id          String    @id @default(cuid())
+  plan        Plan
+  price       Float
+  name        String
+  email       String
+  phone       String?
+  status      SubStatus @default(PENDING)
+  startDate   DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@map("subscriptions")
+}
+
+enum Plan {
+  STARTER
+  PRO
+  ELITE
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Category {
+  STRENGTH
+  CARDIO
+  YOGA
+  CROSSFIT
+  PILATES
+  BOXING
+  CYCLING
+  SWIM
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  WAITLISTED
+  COMPLETED
+}
+
+enum ContactStatus {
+  UNREAD
+  READ
+  REPLIED
+}
+
+enum SubStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+  EXPIRED
 }
